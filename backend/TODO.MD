@@ -1,0 +1,1 @@
+backend/interrnal/core/domain/import.go - ErrorCode string поменять на константные ошибки для логов
