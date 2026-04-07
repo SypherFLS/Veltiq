@@ -29,6 +29,7 @@ func (p *Product) OneByTotal() {
 type Receipt struct {
 	ID       int
 	ImportID int 
+	TenantID int
 	StoreID int
 	TypeOfPayment TOP
 	Summ float64
@@ -36,3 +37,5 @@ type Receipt struct {
 	Cashier string // реализовать подструктуру/хранение кассиров для дальнейшей обработки
 	Time time.Time
 }
+
+
