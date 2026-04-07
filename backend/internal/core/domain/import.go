@@ -15,10 +15,10 @@ const (
 
 
 type Import struct {
-	Id int
-	TenantdID int
+	ID int
+	TenantID int
 	Status ImportStatus
-	ErrorCode string // поменять на структурированные ошибки
+	ErrorCode string // TODO: заменить на структурированные ошибки
 	UpdatedAt time.Time
-	Time time.Time
+	CreatedAt time.Time
 }

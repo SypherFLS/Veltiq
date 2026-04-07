@@ -9,8 +9,9 @@ type Holder struct {
 }
 
 type ProcessModule interface {
-	Start(data []domain.Receipt) error 
-	Read(data []domain.Receipt) error
-	SaveResult(data Holder, res chan any) error 
-	CallRep(data Holder, ReportChan chan domain.Err) error
+	Start(receipts []domain.Receipt) error
+	Finish() error
+	Read(receipts []domain.Receipt) error
+	SaveResult(data Holder, resultCh chan any) error
+	CallReport(data Holder, reportCh chan domain.Err) error
 }

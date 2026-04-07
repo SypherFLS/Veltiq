@@ -11,6 +11,6 @@ type Err struct {
 }
 
 func (e *Err) Error() string {
-	return fmt.Sprintf("error: module: %s, process: %s message : %s",e.ModuleName, e.ProcessName, e.ErrorMessage)
+	return fmt.Sprintf("error: module: %s, process: %s, message: %s", e.ModuleName, e.ProcessName, e.ErrorMessage)
 }
 

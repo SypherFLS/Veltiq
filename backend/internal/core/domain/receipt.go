@@ -14,16 +14,18 @@ const (
 type Product struct {
 	Name string 
 	Quantity int 
-	PricePerOne int
+	UnitPrice int
 	TotalPrice int
 }
 
 func (p *Product) TotalByOne() {
-	p.TotalPrice = p.PricePerOne * p.Quantity
+	p.TotalPrice = p.UnitPrice * p.Quantity
 }
 
 func (p *Product) OneByTotal() {
-	p.PricePerOne  = p.TotalPrice / p.Quantity
+	if p.Quantity > 0 {
+		p.UnitPrice = p.TotalPrice / p.Quantity
+	}
 }
 
 type Receipt struct {
@@ -32,10 +34,10 @@ type Receipt struct {
 	TenantID int
 	StoreID int
 	TypeOfPayment TOP
-	Summ float64
+	Sum int
 	Items []Product
-	Cashier string // реализовать подструктуру/хранение кассиров для дальнейшей обработки
-	Time time.Time
+	Cashier string // TODO: реализовать подструктуру/хранение кассиров для дальнейшей обработки
+	CreatedAt time.Time
 }
 
 

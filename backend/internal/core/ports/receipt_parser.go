@@ -4,10 +4,7 @@ import (
 	"veltiq/internal/core/domain"
 )
 
-type ImportModule interface {
-	Get(args ...any) (any, error)
-	Update() error
-	Validate(args ...any) error
+type Parser interface {
+	Parse(args ...any) ([]domain.Receipt, error)
 	CallReport(data Holder, reportCh chan domain.Err) error
 }
-
