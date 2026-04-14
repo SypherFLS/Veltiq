@@ -6,9 +6,9 @@ import (
 )
 
 type ImportStore interface {
-	Get(ctx context.Context, args ...any) (any, error)
-	Update(ctx context.Context) error
-	Validate(ctx context.Context, args ...any) error
+	CreateIfAbsent(ctx context.Context, imp domain.Import) (bool, error) 
+	SetStatus(ctx context.Context, importID string, st domain.ImportStatus) error
+	GetByDocumentID(ctx context.Context, documentID string) (domain.Import, error)
 	CallReport(ctx context.Context, data Holder, reportCh chan domain.Err) error
 }
 

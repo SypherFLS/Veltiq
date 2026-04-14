@@ -6,6 +6,6 @@ import (
 )
 
 type ReceiptStore interface {
-	SaveParsed(ctx context.Context, receipts []domain.Receipt) error
-	Read(ctx context.Context,) ([]domain.Receipt, error)
+	SaveParsed(ctx context.Context, importID string, receipts []domain.Receipt) error
+	ReadByImport(ctx context.Context, importID string) ([]domain.Receipt, error)
 }
