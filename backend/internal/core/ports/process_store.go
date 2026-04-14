@@ -2,6 +2,7 @@ package ports
 
 import (
 	"veltiq/internal/core/domain"
+	"context"
 )
 
 type Holder struct {
@@ -9,9 +10,9 @@ type Holder struct {
 }
 
 type ProcessModule interface {
-	Start(receipts []domain.Receipt) error
-	Finish() error
-	Read(receipts []domain.Receipt) error
-	SaveResult(data Holder, resultCh chan any) error
-	CallReport(data Holder, reportCh chan domain.Err) error
+	Start(ctx context.Context, receipts []domain.Receipt) error
+	Finish(ctx context.Context,) error
+	Read(ctx context.Context, receipts []domain.Receipt) error
+	SaveResult(ctx context.Context, data Holder, resultCh chan any) error
+	CallReport(ctx context.Context, data Holder, reportCh chan domain.Err) error
 }

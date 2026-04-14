@@ -2,12 +2,13 @@ package ports
 
 import (
 	"veltiq/internal/core/domain"
+	"context"
 )
 
-type ImportModule interface {
-	Get(args ...any) (any, error)
-	Update() error
-	Validate(args ...any) error
-	CallReport(data Holder, reportCh chan domain.Err) error
+type ImportStore interface {
+	Get(ctx context.Context, args ...any) (any, error)
+	Update(ctx context.Context) error
+	Validate(ctx context.Context, args ...any) error
+	CallReport(ctx context.Context, data Holder, reportCh chan domain.Err) error
 }
 
