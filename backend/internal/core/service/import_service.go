@@ -4,9 +4,9 @@ import (
 	"context"
 	_ "fmt"
 	"io"
-	_ "time"
 	"veltiq/internal/core/domain"
 	"veltiq/internal/core/ports"
+	"bytes"
 	"time"
 )
 type ImportService struct {
@@ -39,10 +39,20 @@ func (s *ImportService) RunImport(ctx context.Context, tenantID int, raw io.Read
 
 	created, err := s.imports.CreateIfAbsent(ctx, *imp)
 
-	_ = created
+	_ = created 
+
+	// проверку на дупликат
+
+	s.imports.SetStatus(ctx, imp.ID, domain.ImportProcessing)
+
+	receipts, err := s.parser.Parse(ctx, imp.ID, bytes.NewReader(payload))
+
+	s.receipts.SaveParsed(ctx, imp.ID, receipts)
+
+	s.imports.SetStatus(ctx, imp.ID, domain.ImportDone)
 	
-	return "", nil // placeholder nt fix
-}
+	return imp.ID, nil
+} // без логов, обработки внутренних ошибок проверок на дубликат и тд, доработать, минимально работоспособность обеспечена
 
 func ValidateImport(ctx context.Context, tenantID int, raw io.Reader) error {
 	if raw == nil {
