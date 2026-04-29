@@ -25,6 +25,7 @@ func NewImportService(imports ports.ImportStore, receipts ports.ReceiptStore, pa
 	}
 }
 
+
 func (s *ImportService) RunImport(ctx context.Context, tenantID int, raw io.Reader) (string, error)  {
 
 	s.logger.Info(fmt.Sprintf("importing %v started at %v", tenantID, time.Now()), ctx) // пока хз, может передавать время отдельно
@@ -47,54 +48,98 @@ func (s *ImportService) RunImport(ctx context.Context, tenantID int, raw io.Read
 	created, err := s.imports.CreateIfAbsent(ctx, *imp)
 	
 	if err != nil {
-		osh := domain.InitError("Import", "creating new import", domain.Import_Failed,  err, err.Error(), domain.Local, false)
-		s.logger.Error(osh.Error(), ctx)
-		return "", osh
+		wrapped := s.wrapErr("CreateImport", domain.Import_Failed, err, err.Error(), domain.Local, false)
+		s.logger.Error("create_import_failed", "tenantID", tenantID, "err", wrapped.Error())
+		return "", wrapped
 	}
 
 	if created {
 
-	}
+	} // добавить проверку на дупликат
 
-	// проверку на дупликат
+	
 
-	if err = s.imports.SetStatus(ctx, imp.ID, domain.ImportProcessing); err != nil {
-		osh := domain.InitError("Import", "Status updaiting failed", domain.Status_Update_Failed, err, err.Error(), domain.Local, true)
-		s.logger.Error(osh.Error(), ctx)
-		return "", osh
+	if err := s.imports.SetStatus(ctx, imp.ID, domain.ImportProcessing); err != nil {
+		wrapped := s.wrapErr("SetProcessing", domain.Status_Update_Failed, err, err.Error(), domain.Local, true)
+		s.trySetFailed(ctx, imp.ID, wrapped)
+		s.logger.Error("set_processing_failed", "importID", imp.ID, "err", wrapped.Error())
+		return "", wrapped
 	}
 
 	receipts, err := s.parser.Parse(ctx, imp.ID, bytes.NewReader(payload))
 
-	s.receipts.SaveParsed(ctx, imp.ID, receipts)
+	if err != nil {
+		wrapped := s.wrapErr("Parsing", domain.Parse_Failed, err, err.Error(), domain.Local, false)
+		s.trySetFailed(ctx, imp.ID, wrapped)
+		s.logger.Error("parse_failed", "importID", imp.ID, "tenantID", tenantID, "err", wrapped.Error())
+		return "", wrapped
+	}
 
-	s.imports.SetStatus(ctx, imp.ID, domain.ImportDone)
+	if err := s.receipts.SaveParsed(ctx, imp.ID, receipts); err != nil {
+		wrapped := s.wrapErr("SaveParsed", domain.Store_Failed, err, err.Error(), domain.Local, true)
+		s.trySetFailed(ctx, imp.ID, wrapped)
+		s.logger.Error("save_parsed_failed", "importID", imp.ID, "err", wrapped.Error())
+		return "", wrapped
+	}
+
+
+	if err := s.imports.SetStatus(ctx, imp.ID, domain.ImportDone); err != nil {
+		wrapped := s.wrapErr("SetDone", domain.Status_Update_Failed, err, err.Error(), domain.Local, true)
+		s.trySetFailed(ctx, imp.ID, wrapped)
+		s.logger.Error("set_done_failed", "importID", imp.ID, "err", wrapped.Error())
+		return "", wrapped
+	}
 	
 	return imp.ID, nil
-} // без логов, обработки внутренних ошибок проверок на дубликат и тд, доработать, минимально работоспособность обеспечена
+} // доработать, минимально работоспособность обеспечена
+
+func (s *ImportService) trySetFailed(ctx context.Context, importID string, cause error) {
+	if importID == "" {
+		return
+	}
+	if err := s.imports.SetStatus(ctx, importID, domain.ImportFailed); err != nil {
+		s.logger.Error(
+			"set_failed_status_error",
+			"importID", importID,
+			"cause", cause.Error(),
+			"statusErr", err.Error(),
+		)
+	}
+}
+
+func (s *ImportService) wrapErr(
+	process string,
+	code domain.ErrorCode,
+	cause error,
+	msg string,
+	severity domain.Rang,
+	retryable bool,
+) error {
+	return domain.InitError("Import", process, code, cause, msg, severity, retryable)
+}
 
 func ValidateImport(ctx context.Context, tenantID int, raw io.Reader) error {
-	var osh error 
 	if raw == nil {
-		err := domain.InitError ("Import", "Reading",  domain.Invalid_Input, osh, "empty input", domain.Local, false)
+		err := domain.InitError ("Import", "Reading",  domain.Invalid_Input, nil, "empty input", domain.Local, false)
 		return err
 	}
 	if tenantID <= 0 {
-		err := domain.InitError ("Import", "Reading", domain.Invalid_Input, osh, "invalid tenantID", domain.Local, false)
+		err := domain.InitError ("Import", "Reading", domain.Invalid_Input, nil, "invalid tenantID", domain.Local, false)
 		return err
 	}
 	if ctx == nil {
-		err := domain.InitError ("Import", "Reading", domain.Invalid_Input, osh, "empty ctx", domain.Local, false)
+		err := domain.InitError ("Import", "Reading", domain.Invalid_Input, nil, "empty ctx", domain.Local, false)
 		return err
 	}
 	if ctx.Err() == context.Canceled {
-		err := domain.InitError ("Import", "Reading", domain.Canceled, osh, "ctx canceled", domain.Warn, false)
+		err := domain.InitError ("Import", "Reading", domain.Canceled, nil, "ctx canceled", domain.Warn, false)
 		return err
 	}
 	if ctx.Err() == context.DeadlineExceeded {
-		err := domain.InitError ("Import", "Reading", domain.Timeout, osh, "timeout", domain.Warn, true)
+		err := domain.InitError ("Import", "Reading", domain.Timeout, nil, "timeout", domain.Warn, true)
 		return err
 	}
 
 	return nil
 }
+

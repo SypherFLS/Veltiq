@@ -10,10 +10,10 @@ const (
 	Invalid_Input ErrorCode = "invalid input"
 	Import_Failed ErrorCode = "import failed"
 	Status_Update_Failed ErrorCode = "status update failed"
-	Parse_Failed  ErrorCode = "parse failed"
-	Canceled      ErrorCode = "canceled"
-	Store_Failed  ErrorCode = "store failed"
-	Timeout       ErrorCode = "timeout"
+	Parse_Failed ErrorCode = "parse failed"
+	Canceled ErrorCode = "canceled"
+	Store_Failed ErrorCode = "store failed"
+	Timeout ErrorCode = "timeout"
 )
 
 type Rang string
@@ -27,13 +27,13 @@ const (
 )
 
 type Err struct {
-	ModuleName   string
-	ProcessName  string
-	Code         ErrorCode
-	Cause        error
+	ModuleName string
+	ProcessName string
+	Code ErrorCode
+	Cause error
 	ErrorMessage string
-	Severity     Rang
-	Retryable    bool
+	Severity Rang
+	Retryable bool
 }
 
 func (e *Err) Error() string {
@@ -42,11 +42,12 @@ func (e *Err) Error() string {
 
 func InitError(moduleName string, processName string, code ErrorCode, cause error, errorMessage string, severity Rang, retryable bool) *Err {
 	return &Err{
-		ModuleName:   moduleName,
-		ProcessName:  processName,
-		Code:         code,
+		ModuleName: moduleName,
+		ProcessName: processName,
+		Code: code,
+		Cause: cause,
 		ErrorMessage: errorMessage,
-		Severity:     severity,
-		Retryable:    retryable,
+		Severity: severity,
+		Retryable:retryable,
 	}
 }

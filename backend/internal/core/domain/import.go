@@ -29,11 +29,15 @@ type Import struct {
 	CreatedAt time.Time
 }
 
+func (i *Import) GetImportStatus() ImportStatus{
+	return i.Status
+}
+
 func NewImport(tenantID int, payload []byte, now time.Time) *Import {
 	imp := &Import{
-		ID:        uuid.New().String(),
-		TenantID:  tenantID,
-		Status:    ImportPending,
+		ID: uuid.New().String(),
+		TenantID: tenantID,
+		Status: ImportPending,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

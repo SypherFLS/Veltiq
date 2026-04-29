@@ -29,7 +29,7 @@ func (p *Product) OneByTotal() {
 }
 
 type Receipt struct {
-	ID       int
+	ID int
 	ImportID int 
 	TenantID int
 	StoreID int
