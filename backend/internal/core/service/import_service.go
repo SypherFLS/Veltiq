@@ -25,6 +25,33 @@ func NewImportService(imports ports.ImportStore, receipts ports.ReceiptStore, pa
 	}
 }
 
+func (s *ImportService) GetImportStatus(ctx context.Context, importID string) (domain.ImportStatus, error) {
+	if ctx == nil {
+		return domain.ImportPending, domain.InitError("Import", "GetStatus", domain.Invalid_Input, nil, "empty ctx", domain.Local, false,
+		)
+	}
+	if err := ctx.Err(); err != nil {
+		if err == context.Canceled {
+			return domain.ImportPending, domain.InitError("Import", "GetStatus", domain.Canceled, err, "ctx canceled", domain.Warn, false,
+			)
+		}
+		if err == context.DeadlineExceeded {
+			return domain.ImportPending, domain.InitError("Import", "GetStatus", domain.Timeout, err, "timeout", domain.Warn, true,
+			)
+		}
+	}
+
+	status, err := s.imports.GetStatusByID(ctx, importID)
+
+	if err != nil {
+		wrapped := s.wrapErr("GetStatus", domain.Import_Failed, err, err.Error(), domain.Local, false)
+		s.logger.Error("get_status_failed", "importID", importID, "err", wrapped.Error())
+		return domain.ImportPending, wrapped 
+	}
+	
+	return status, nil
+}
+
 
 func (s *ImportService) RunImport(ctx context.Context, tenantID int, raw io.Reader) (string, error)  {
 
@@ -54,8 +81,10 @@ func (s *ImportService) RunImport(ctx context.Context, tenantID int, raw io.Read
 	}
 
 	if created {
-
-	} // добавить проверку на дупликат
+		wrapped := s.wrapErr("CreateImport", domain.Import_Failed, err, "already exist", domain.Local, false)
+		s.logger.Error("create_import_failed", "tenantID", tenantID, "err", wrapped.Error())
+		return "", wrapped
+	} // переработать напрочь пока заглушка ошибки
 
 	
 
