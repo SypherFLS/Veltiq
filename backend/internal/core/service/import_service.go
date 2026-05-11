@@ -80,11 +80,11 @@ func (s *ImportService) RunImport(ctx context.Context, tenantID int, raw io.Read
 		return "", wrapped
 	}
 
-	if created {
-		wrapped := s.wrapErr("CreateImport", domain.Import_Failed, err, "already exist", domain.Local, false)
+	if !created {
+		wrapped := s.wrapErr("CreateImport", domain.Import_Failed, nil, "already exist", domain.Local, false)
 		s.logger.Error("create_import_failed", "tenantID", tenantID, "err", wrapped.Error())
 		return "", wrapped
-	} // переработать напрочь пока заглушка ошибки
+	} // переработать напрочь пока заглушка ошибки на ветке дев другая реализация
 
 	
 
