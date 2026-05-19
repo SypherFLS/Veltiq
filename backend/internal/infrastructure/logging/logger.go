@@ -1,11 +1,11 @@
-package logger 
+package logging 
 
 import (
 	
 )
 
 type Logger struct {
-
+	
 }
 
 func (l *Logger) Info() {
