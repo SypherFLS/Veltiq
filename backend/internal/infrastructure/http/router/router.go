@@ -11,11 +11,7 @@ import (
 	"veltiq/internal/infrastructure/http/middleware"
 )
 
-func NewRouter(
-	authService *service.AuthService,
-	tokens ports.TokenManager,
-) *gin.Engine {
-
+func NewRouter(authService *service.AuthService, tokens ports.TokenManager) *gin.Engine {
 	router := gin.Default()
 
 	authHandler := v1.NewAuthHandler(
