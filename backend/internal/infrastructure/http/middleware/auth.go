@@ -6,28 +6,24 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"veltiq/internal/core/ports"
+	"veltiq/internal/infrastructure/cookies"
 )
 
-func AuthMiddleware(
-	tokens ports.TokenManager,
-) gin.HandlerFunc {
-
+func AuthMiddleware(tokens ports.TokenManager, cookieManager *cookies.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		cookie, err := c.Request.Cookie("access_token")
+		token, err := cookieManager.AccessTokenFromRequest(c.Request)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		userID, err := tokens.Verify(cookie.Value)
+		userID, err := tokens.VerifyAccess(token)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		c.Set("userID", userID)
-
+		c.Set(UserIDKey, userID)
 		c.Next()
 	}
 }

@@ -1,19 +1,17 @@
-package domain 
+package domain
 
-import (
-	"time"
-)
+import "time"
 
-type TOP string 
+type PaymentType string
 
 const (
-	PaymentByCard TOP = "card"
-	PaymentByCash TOP = "cash"
+	PaymentByCard PaymentType = "card"
+	PaymentByCash PaymentType = "cash"
 )
 
 type Product struct {
-	Name string 
-	Quantity int 
+	Name string
+	Quantity int
 	UnitPrice int
 	TotalPrice int
 }
@@ -30,14 +28,12 @@ func (p *Product) OneByTotal() {
 
 type Receipt struct {
 	ID int
-	ImportID int 
-	TenantID int
+	ImportID string
+	TenantID string
 	StoreID int
-	TypeOfPayment TOP
+	TypeOfPayment PaymentType
 	Sum int
 	Items []Product
-	Cashier string // TODO: реализовать подструктуру/хранение кассиров для дальнейшей обработки
+	Cashier string
 	CreatedAt time.Time
 }
-
-

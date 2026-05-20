@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"log"
 
 	"veltiq/internal/infrastructure/config"
 
@@ -9,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB(cfg *config.Config,) (*gorm.DB, error) {
+func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%v user=%s password=%s dbname=%s sslmode=%s",
 		cfg.DB.Host,
@@ -20,13 +21,16 @@ func InitDB(cfg *config.Config,) (*gorm.DB, error) {
 		cfg.DB.SSLMode,
 	)
 
-	db, err := gorm.Open(
-		postgres.Open(dsn),
-		&gorm.Config{},
-	)
-
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.DB.AutoMigrate {
+		log.Println("running database auto migration")
+		if err := AutoMigrate(db); err != nil {
+			return nil, err
+		}
 	}
 
 	return db, nil

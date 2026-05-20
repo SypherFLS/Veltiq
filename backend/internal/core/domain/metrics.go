@@ -1,8 +1,6 @@
 package domain
 
-import (
-	"time"
-)
+import "time"
 
 type ProcessStat struct {
 	Process string
@@ -20,6 +18,3 @@ type Metrics struct {
 	DataQuantity string
 	Time time.Time
 }
-
-
-

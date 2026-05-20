@@ -1,8 +1,8 @@
-package ports		
+package ports
 
 import (
-	"veltiq/internal/core/domain"
 	"context"
+	"veltiq/internal/core/domain"
 )
 
 type ReceiptStore interface {

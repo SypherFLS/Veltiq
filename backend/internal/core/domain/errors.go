@@ -1,10 +1,11 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 )
 
-type ErrorCode string // типизация ошибок, расширить
+type ErrorCode string
 
 const (
 	Invalid_Input ErrorCode = "invalid input"
@@ -16,14 +17,13 @@ const (
 	Timeout ErrorCode = "timeout"
 )
 
-type Rang string
+type Severity string
 
 const (
-	Fatal         Rang = "Fatal"
-	Insignificant Rang = "insignificant"
-	Local         Rang = "local"
-	Warn          Rang = "Warn"
-	// прописать ранги значимости
+	SeverityFatal Severity = "fatal"
+	SeverityInsignificant Severity = "insignificant"
+	SeverityLocal Severity = "local"
+	SeverityWarn Severity = "warn"
 )
 
 type Err struct {
@@ -32,7 +32,7 @@ type Err struct {
 	Code ErrorCode
 	Cause error
 	ErrorMessage string
-	Severity Rang
+	Severity Severity
 	Retryable bool
 }
 
@@ -40,7 +40,19 @@ func (e *Err) Error() string {
 	return fmt.Sprintf("error: module: %s, process: %s, message: %s", e.ModuleName, e.ProcessName, e.ErrorMessage)
 }
 
-func InitError(moduleName string, processName string, code ErrorCode, cause error, errorMessage string, severity Rang, retryable bool) *Err {
+func (e *Err) Unwrap() error {
+	return e.Cause
+}
+
+func InitError(
+	moduleName string,
+	processName string,
+	code ErrorCode,
+	cause error,
+	errorMessage string,
+	severity Severity,
+	retryable bool,
+) *Err {
 	return &Err{
 		ModuleName: moduleName,
 		ProcessName: processName,
@@ -48,6 +60,28 @@ func InitError(moduleName string, processName string, code ErrorCode, cause erro
 		Cause: cause,
 		ErrorMessage: errorMessage,
 		Severity: severity,
-		Retryable:retryable,
+		Retryable: retryable,
 	}
+}
+
+var (
+	ErrEmailTaken = errors.New("email already registered")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrImportNotFound = errors.New("import not found")
+	ErrImportForbidden = errors.New("import forbidden")
+	ErrImportNotReady = errors.New("import not ready")
+	ErrImportDuplicate = errors.New("import already exists")
+	ErrInvalidRefreshToken = errors.New("invalid refresh token")
+)
+
+type ImportDuplicateError struct {
+	ExistingImportID string
+}
+
+func (e *ImportDuplicateError) Error() string {
+	return ErrImportDuplicate.Error()
+}
+
+func (e *ImportDuplicateError) Is(target error) bool {
+	return target == ErrImportDuplicate
 }

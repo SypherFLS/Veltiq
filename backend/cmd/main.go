@@ -1,51 +1,33 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"veltiq/internal/core/service"
-
+	"veltiq/internal/app"
 	"veltiq/internal/infrastructure/config"
-	"veltiq/internal/infrastructure/http/router"
-	"veltiq/internal/infrastructure/jwt"
-	"veltiq/internal/infrastructure/repository/postgres"
-	"veltiq/internal/infrastructure/security"
+	httpserver "veltiq/internal/infrastructure/http/server"
 )
 
 func main() {
 	cfg := config.MustLoad()
 
-	db, err := postgres.InitDB(cfg)
+	application, err := app.Bootstrap(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	userRepo := postgres.NewUserRepository(db)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	passwordManager := &security.PasswordManager{}
+	log.Println("server started on", cfg.HTTP.Address)
 
-	jwtManager := jwt.NewManager(
-		cfg.JWT.SecretKey,
-	)
-
-	authService := service.NewAuthService(
-		userRepo,
-		passwordManager,
-		jwtManager,
-	)
-
-	r := router.NewRouter(
-		authService,
-		jwtManager,
-	)
-
-	log.Println(
-		"server started on",
-		cfg.HTTP.Address,
-	)
-
-	err = r.Run(cfg.HTTP.Address)
-	if err != nil {
+	if err := httpserver.Run(ctx, cfg, application.Router); err != nil {
 		log.Fatal(err)
 	}
+
+	log.Println("server stopped")
 }

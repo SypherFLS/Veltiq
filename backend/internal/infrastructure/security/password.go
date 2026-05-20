@@ -20,7 +20,7 @@ func (p *PasswordManager) Hash(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func (p *PasswordManager) Compare(hash string, password string,) error {
+func (p *PasswordManager) Compare(hash string, password string) error {
 	return bcrypt.CompareHashAndPassword(
 		[]byte(hash),
 		[]byte(password),

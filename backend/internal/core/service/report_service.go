@@ -1,67 +1,71 @@
 package service
 
 import (
+	"context"
+	"errors"
+	"time"
+
 	"veltiq/internal/core/domain"
 	"veltiq/internal/core/ports"
-	"context"
-	"time"
 )
 
 type ReportService struct {
-	imports  ports.ImportStore
+	imports ports.ImportStore
 	receipts ports.ReceiptStore
-	logger   ports.Logger
+	analytics ports.Analytics
+	logger ports.Logger
 }
 
-func NewReportService(imports ports.ImportStore, receipts ports.ReceiptStore, logger ports.Logger) *ReportService {
+func NewReportService(
+	imports ports.ImportStore,
+	receipts ports.ReceiptStore,
+	analytics ports.Analytics,
+	logger ports.Logger,
+) *ReportService {
 	return &ReportService{
-		imports:  imports,
+		imports: imports,
 		receipts: receipts,
-		logger:   logger,
+		analytics: analytics,
+		logger: logger,
 	}
 }
 
-func (s *ReportService) BuildReport(ctx context.Context, importID string) (domain.Report, error) {
-	if ctx == nil {
-		return domain.Report{}, domain.InitError("Report", "Build", domain.Invalid_Input, nil, "empty ctx", domain.Local, false)
-	}
+func (s *ReportService) BuildReport(ctx context.Context, importID, tenantID string) (domain.Report, error) {
 	if importID == "" {
-		return domain.Report{}, domain.InitError("Report", "Build", domain.Invalid_Input, nil, "empty importID", domain.Local, false)
+		return domain.Report{}, domain.InitError("Report", "Build", domain.Invalid_Input, nil, "empty importID", domain.SeverityLocal, false)
 	}
 
-	status, err := s.imports.GetStatusByID(ctx, importID)
+	imp, err := s.imports.GetByID(ctx, importID)
 	if err != nil {
-		return domain.Report{}, domain.InitError("Report", "GetStatus", domain.Store_Failed, err, err.Error(), domain.Local, true)
+		if errors.Is(err, domain.ErrImportNotFound) {
+			return domain.Report{}, err
+		}
+		return domain.Report{}, domain.InitError("Report", "GetImport", domain.Store_Failed, err, err.Error(), domain.SeverityLocal, true)
+	}
+
+	if imp.TenantID != tenantID {
+		return domain.Report{}, domain.ErrImportForbidden
+	}
+
+	if imp.Status != domain.ImportDone {
+		return domain.Report{}, domain.ErrImportNotReady
 	}
 
 	receipts, err := s.receipts.ReadByImport(ctx, importID)
 	if err != nil {
-		return domain.Report{}, domain.InitError("Report", "ReadReceipts", domain.Store_Failed, err, err.Error(), domain.Local, true)
+		return domain.Report{}, domain.InitError("Report", "ReadReceipts", domain.Store_Failed, err, err.Error(), domain.SeverityLocal, true)
 	}
 
-	var totalSum, cashSum, cardSum int
-	for _, r := range receipts {
-		totalSum += r.Sum
-		switch r.TypeOfPayment {
-		case domain.PaymentByCash:
-			cashSum += r.Sum
-		case domain.PaymentByCard:
-			cardSum += r.Sum
-		}
+	summary, err := s.analytics.Analyze(ctx, importID, receipts)
+	if err != nil {
+		return domain.Report{}, domain.InitError("Report", "Analyze", domain.Store_Failed, err, err.Error(), domain.SeverityLocal, false)
 	}
 
-	report := domain.Report{
-		ImportID:  importID,
-		Status:    status,
-		CreatedAt: time.Now().UTC(),
+	return domain.Report{
+		ImportID: importID,
+		Status: imp.Status,
+		CreatedAt: imp.CreatedAt,
 		UpdatedAt: time.Now().UTC(),
-		Data: []any{
-			map[string]any{"receiptsCount": len(receipts)},
-			map[string]any{"totalSum": totalSum},
-			map[string]any{"cashSum": cashSum},
-			map[string]any{"cardSum": cardSum},
-		},
-	}
-
-	return report, nil
+		Data: summary,
+	}, nil
 }

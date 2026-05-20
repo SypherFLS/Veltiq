@@ -1,21 +1,30 @@
-package logging 
+package logging
 
 import (
-	
+	"log/slog"
+	"os"
+
+	"veltiq/internal/core/ports"
 )
 
-type Logger struct {
-	
+type SlogLogger struct {
+	log *slog.Logger
 }
 
-func (l *Logger) Info() {
-
+func New() ports.Logger {
+	return &SlogLogger{
+		log: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})),
+	}
 }
 
-func (l *Logger) Warn() {
-	
+func (l *SlogLogger) Info(msg string, kv ...any) {
+	l.log.Info(msg, kv...)
 }
 
-func (l *Logger) Error() {
+func (l *SlogLogger) Warn(msg string, kv ...any) {
+	l.log.Warn(msg, kv...)
+}
 
+func (l *SlogLogger) Error(msg string, kv ...any) {
+	l.log.Error(msg, kv...)
 }

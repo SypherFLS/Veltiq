@@ -1,4 +1,4 @@
-package ports 
+package ports
 
 type Logger interface {
 	Info(msg string, kv ...any)

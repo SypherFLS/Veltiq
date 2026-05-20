@@ -1,39 +1,38 @@
 package domain
 
 import (
-	"time"
-	"github.com/google/uuid"
 	"crypto/sha256"
 	"encoding/hex"
-	"strconv"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type ImportStatus string
 
 const (
-	ImportPending    ImportStatus = "pending"
+	ImportPending ImportStatus = "pending"
 	ImportProcessing ImportStatus = "processing"
 	ImportPartialFail ImportStatus = "partial_failed"
-	ImportDone       ImportStatus = "done"
-	ImportFailed     ImportStatus = "failed"
+	ImportDone ImportStatus = "done"
+	ImportFailed ImportStatus = "failed"
 )
-
 
 type Import struct {
 	ID string
-	DocumentID string 
-	TenantID int
+	DocumentID string
+	TenantID string
 	Status ImportStatus
-	ErrorCode string 
+	ErrorCode string
 	UpdatedAt time.Time
 	CreatedAt time.Time
 }
 
-func (i *Import) GetImportStatus() ImportStatus{
+func (i *Import) GetImportStatus() ImportStatus {
 	return i.Status
 }
 
-func NewImport(tenantID int, payload []byte, now time.Time) *Import {
+func NewImport(tenantID string, payload []byte, now time.Time) *Import {
 	imp := &Import{
 		ID: uuid.New().String(),
 		TenantID: tenantID,
@@ -45,14 +44,9 @@ func NewImport(tenantID int, payload []byte, now time.Time) *Import {
 	return imp
 }
 
-func (i *Import) Update() { // обновление импорта
-
-}
-
-
-func (i *Import) BuildDocumentID(payload []byte) string { // уникален под одинаковые документы разных компаний
+func (i *Import) BuildDocumentID(payload []byte) string {
 	h := sha256.New()
-	h.Write([]byte(strconv.Itoa(i.TenantID)))
+	h.Write([]byte(i.TenantID))
 	h.Write([]byte{':'})
 	h.Write(payload)
 	return hex.EncodeToString(h.Sum(nil))

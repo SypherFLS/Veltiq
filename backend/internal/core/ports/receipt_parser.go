@@ -1,9 +1,9 @@
 package ports
 
 import (
-	"veltiq/internal/core/domain"
 	"context"
 	"io"
+	"veltiq/internal/core/domain"
 )
 
 type ReceiptParser interface {

@@ -2,24 +2,25 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
-	"veltiq/internal/core/ports"
-	"veltiq/internal/core/domain"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
+	"veltiq/internal/core/domain"
+	"veltiq/internal/core/ports"
 )
 
 type AuthService struct {
-	users   ports.UserRepository
-	hasher  ports.PasswordHasher
-	tokens  ports.TokenManager
+	users ports.UserRepository
+	hasher ports.PasswordHasher
 }
 
-func NewAuthService(users ports.UserRepository, hasher ports.PasswordHasher, tokens ports.TokenManager) *AuthService {
+func NewAuthService(users ports.UserRepository, hasher ports.PasswordHasher) *AuthService {
 	return &AuthService{
-		users:  users,
+		users: users,
 		hasher: hasher,
-		tokens: tokens,
 	}
 }
 
@@ -38,6 +39,9 @@ func (s *AuthService) Register(ctx context.Context, email string, password strin
 
 	err = s.users.Create(ctx, user)
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return domain.ErrEmailTaken
+		}
 		return err
 	}
 
@@ -45,21 +49,18 @@ func (s *AuthService) Register(ctx context.Context, email string, password strin
 }
 
 func (s *AuthService) Login(ctx context.Context, email string, password string) (string, error) {
-
 	user, err := s.users.GetByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", domain.ErrInvalidCredentials
+		}
 		return "", err
 	}
 
 	err = s.hasher.Compare(user.PasswordHash, password)
 	if err != nil {
-		return "", err
+		return "", domain.ErrInvalidCredentials
 	}
 
-	token, err := s.tokens.Generate(user.ID)
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
+	return user.ID, nil
 }
