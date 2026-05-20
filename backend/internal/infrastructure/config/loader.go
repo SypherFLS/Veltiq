@@ -9,25 +9,28 @@ import (
 
 type Config struct {   
 	Env string `yaml:"env" env-default:"prod" env-required:"true"`
-	HTTP        HTTP   `yaml:"http_server"`
-	DB          DB     `yaml:"db"`
+	HTTP HTTP   `yaml:"http_server"`
+	DB DB     `yaml:"db"`
+	JWT JWT `yaml:"jwt"`
 }
 
-type HTTP struct {    
+type HTTP struct {
 	Address     string        `yaml:"address" env:"HTTP_ADDRESS" env-default:"localhost:8080" env-required:"true"`
-    Timeout     time.Duration `yaml:"timeout" env-default:"4s"`  
-    IddleTimeout time.Duration `yaml:"iddle_timeout" env-default:"60s"`
+	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
+	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
-
 type DB struct {
-	Host     string `yaml:"host" env-default:"localhost"`
-	Port     int    `yaml:"port" env-default:"5432"`
-	User     string `yaml:"user" env-default:"postgres"`
+	Host string `yaml:"host" env-default:"localhost"`
+	Port int    `yaml:"port" env-default:"5432"`
+	User string `yaml:"user" env-default:"postgres"`
 	Password string `yaml:"password" env-default:"postgres"`
-	DBName   string `yaml:"dbname" env-default:"postgres"`
-	SSLMode  string `yaml:"sslmode" env-default:"disable"`
+	DBName string `yaml:"dbname" env-default:"postgres"`
+	SSLMode string `yaml:"sslmode" env-default:"disable"`
 }
 
+type JWT struct {
+	SecretKey string `yaml:"secret_key"`
+}
 
 func MustLoad() *Config {    
 
