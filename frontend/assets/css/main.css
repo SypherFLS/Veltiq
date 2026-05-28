@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply h-full antialiased;
+  }
+  body {
+    @apply h-full bg-surface-50 text-surface-800 font-sans;
+  }
+  :root {
+    --color-brand: theme('colors.brand.600');
+  }
+}
+
+@layer components {
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-surface-700;
+  }
+  .field-error {
+    @apply mt-1 text-sm text-red-600;
+  }
+  .card-base {
+    @apply rounded-2xl bg-white shadow-soft border border-surface-100;
+  }
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+  }
+}

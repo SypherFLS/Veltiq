@@ -51,6 +51,10 @@ func (s *ImportService) GetImportStatus(ctx context.Context, importID, tenantID 
 	return imp.Status, nil
 }
 
+func (s *ImportService) ListImports(ctx context.Context, tenantID string, limit int) ([]domain.Import, int64, error) {
+	return s.imports.ListByTenant(ctx, tenantID, limit)
+}
+
 func (s *ImportService) RunImport(ctx context.Context, tenantID string, raw io.Reader) (string, error) {
 	s.logger.Info("import_started", "tenantID", tenantID, "at", time.Now().UTC())
 

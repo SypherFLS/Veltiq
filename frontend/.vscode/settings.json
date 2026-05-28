@@ -1,0 +1,45 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "vue.server.hybridMode": true,
+
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript", "typescript", "vue"],
+
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["class:\\s*?[\"'`]([^\"'`]*).*?,"]
+  ],
+  "tailwindCSS.includeLanguages": {
+    "vue": "html",
+    "vue-html": "html"
+  },
+
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+
+  "search.exclude": {
+    ".nuxt": true,
+    ".output": true,
+    "node_modules": true,
+    "dist": true
+  },
+
+  "files.exclude": {
+    ".nuxt": false,
+    ".output": true
+  }
+}

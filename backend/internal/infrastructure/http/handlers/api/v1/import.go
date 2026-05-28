@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,67 @@ type ImportHandler struct {
 
 func NewImportHandler(runner *orchestrator.Runner) *ImportHandler {
 	return &ImportHandler{runner: runner}
+}
+
+type importItemJSON struct {
+	ID        string              `json:"id"`
+	Status    domain.ImportStatus `json:"status"`
+	ErrorCode string              `json:"errorCode,omitempty"`
+	CreatedAt string              `json:"createdAt"`
+	UpdatedAt string              `json:"updatedAt"`
+}
+
+type importListJSON struct {
+	Items  []importItemJSON `json:"items"`
+	Total  int64            `json:"total"`
+	Cursor *string          `json:"cursor"`
+}
+
+func importToJSON(i domain.Import) importItemJSON {
+	out := importItemJSON{
+		ID:        i.ID,
+		Status:    i.Status,
+		ErrorCode: i.ErrorCode,
+	}
+	if !i.CreatedAt.IsZero() {
+		out.CreatedAt = i.CreatedAt.UTC().Format(time.RFC3339)
+	}
+	if !i.UpdatedAt.IsZero() {
+		out.UpdatedAt = i.UpdatedAt.UTC().Format(time.RFC3339)
+	}
+	return out
+}
+
+func (h *ImportHandler) List(c *gin.Context) {
+	tenantID, ok := tenantFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	limit := 20
+	if v := c.Query("limit"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			limit = n
+		}
+	}
+
+	imports, total, err := h.runner.ListImports(c.Request.Context(), tenantID, limit)
+	if err != nil {
+		httperrors.Write(c, err)
+		return
+	}
+
+	items := make([]importItemJSON, 0, len(imports))
+	for _, imp := range imports {
+		items = append(items, importToJSON(imp))
+	}
+
+	c.JSON(http.StatusOK, importListJSON{
+		Items:  items,
+		Total:  total,
+		Cursor: nil,
+	})
 }
 
 func (h *ImportHandler) Upload(c *gin.Context) {
@@ -49,7 +111,7 @@ func (h *ImportHandler) Upload(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"import_id": importID,
+		"id":     importID,
 		"status": status,
 	})
 }
@@ -68,10 +130,7 @@ func (h *ImportHandler) Status(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"import_id": imp.ID,
-		"status": imp.Status,
-	})
+	c.JSON(http.StatusOK, importToJSON(imp))
 }
 
 func (h *ImportHandler) Report(c *gin.Context) {
@@ -117,19 +176,21 @@ func readCSVBody(c *gin.Context) (io.ReadCloser, error) {
 }
 
 type reportJSON struct {
-	ImportID string `json:"import_id"`
-	Status domain.ImportStatus `json:"status"`
-	Data domain.ReportSummary `json:"data"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ImportID  string               `json:"importId"`
+	Status    domain.ImportStatus  `json:"status"`
+	Data      domain.ReportSummary `json:"data"`
+	CreatedAt string               `json:"createdAt"`
+	UpdatedAt string               `json:"updatedAt"`
+	ErrorCode string               `json:"errorCode,omitempty"`
 }
 
 func reportResponse(r domain.Report) reportJSON {
 	return reportJSON{
-		ImportID: r.ImportID,
-		Status: r.Status,
-		Data: r.Data,
+		ImportID:  r.ImportID,
+		Status:    r.Status,
+		Data:      r.Data,
 		CreatedAt: r.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt: r.UpdatedAt.UTC().Format(time.RFC3339),
+		ErrorCode: r.ErrorCode,
 	}
 }

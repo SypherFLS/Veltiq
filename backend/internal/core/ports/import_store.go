@@ -11,4 +11,5 @@ type ImportStore interface {
 	CreateIfAbsent(ctx context.Context, imp domain.Import) (exists bool, err error)
 	SetStatus(ctx context.Context, importID string, st domain.ImportStatus) error
 	GetByDocumentID(ctx context.Context, tenantID, documentID string) (domain.Import, error)
+	ListByTenant(ctx context.Context, tenantID string, limit int) ([]domain.Import, int64, error)
 }

@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "antfu.iconify",
+    "antfu.goto-alias",
+    "Nuxt.mdc",
+    "esbenp.prettier-vscode",
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors",
+    "christian-kohler.path-intellisense",
+    "formulahendry.auto-rename-tag",
+    "humao.rest-client",
+    "EditorConfig.EditorConfig",
+    "eamodio.gitlens",
+    "Gruntfuggly.todo-tree"
+  ],
+  "unwantedRecommendations": [
+    "octref.vetur"
+  ]
+}

@@ -52,6 +52,7 @@ func NewRouter(deps Deps) *gin.Engine {
 	protected.GET("/profile", profileHandler.Get)
 
 	importHandler := v1.NewImportHandler(deps.Runner)
+	protected.GET("/imports", importHandler.List)
 	protected.POST("/imports", importHandler.Upload)
 	protected.GET("/imports/:id/status", importHandler.Status)
 	protected.GET("/imports/:id/report", importHandler.Report)

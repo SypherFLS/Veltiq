@@ -73,6 +73,38 @@ func (r *ImportRepository) SetStatus(ctx context.Context, importID string, st do
 	return nil
 }
 
+func (r *ImportRepository) ListByTenant(ctx context.Context, tenantID string, limit int) ([]domain.Import, int64, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 200 {
+		limit = 200
+	}
+
+	var total int64
+	if err := r.db.WithContext(ctx).
+		Model(&importRecord{}).
+		Where("tenant_id = ?", tenantID).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var records []importRecord
+	if err := r.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&records).Error; err != nil {
+		return nil, 0, err
+	}
+
+	out := make([]domain.Import, 0, len(records))
+	for _, rec := range records {
+		out = append(out, importToDomain(rec))
+	}
+	return out, total, nil
+}
+
 func (r *ImportRepository) GetByDocumentID(ctx context.Context, tenantID, documentID string) (domain.Import, error) {
 	var record importRecord
 	err := r.db.WithContext(ctx).

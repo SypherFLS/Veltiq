@@ -35,6 +35,10 @@ func (r *Runner) GetImportStatus(ctx context.Context, importID, tenantID string)
 	return r.importService.GetImportStatus(ctx, importID, tenantID)
 }
 
+func (r *Runner) ListImports(ctx context.Context, tenantID string, limit int) ([]domain.Import, int64, error) {
+	return r.importService.ListImports(ctx, tenantID, limit)
+}
+
 func (r *Runner) GetImportReport(ctx context.Context, importID, tenantID string) (domain.Report, error) {
 	return r.reportService.BuildReport(ctx, importID, tenantID)
 }

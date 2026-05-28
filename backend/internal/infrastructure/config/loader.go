@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
 )
 
@@ -72,7 +73,10 @@ func MustLoad() *Config {
 	}
 
 	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
+	useYAMLTags := func(c *mapstructure.DecoderConfig) {
+		c.TagName = "yaml"
+	}
+	if err := viper.Unmarshal(&cfg, useYAMLTags); err != nil {
 		log.Fatalf("error unmarshaling config: %s", err)
 	}
 
