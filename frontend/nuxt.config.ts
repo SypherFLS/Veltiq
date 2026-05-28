@@ -43,6 +43,14 @@ export default defineNuxtConfig({
     },
   },
 
+  icon: {
+    // Явно бандлим коллекцию lucide в server runtime, чтобы /api/_nuxt_icon
+    // работал и без выхода в интернет.
+    serverBundle: {
+      collections: ['lucide'],
+    },
+  },
+
   app: {
     head: {
       title: 'Veltiq — аналитика чековых книг',
