@@ -6,7 +6,7 @@ WORKDIR /src
 RUN apk add --no-cache git ca-certificates
 
 # proxy.golang.org часто недоступен с европейских/российских VPS — используем зеркала.
-ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct
+ENV GOPROXY=https://proxy.golang.org,https://goproxy.io,https://goproxy.cn,direct
 ENV GOSUMDB=off
 
 COPY go.mod go.sum ./
