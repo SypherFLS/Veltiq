@@ -5,10 +5,6 @@ WORKDIR /src
 
 RUN apk add --no-cache git ca-certificates
 
-# proxy.golang.org часто недоступен с европейских/российских VPS — используем зеркала.
-ENV GOPROXY=https://proxy.golang.org,https://goproxy.io,direct
-ENV GOSUMDB=off
-
 COPY go.mod go.sum ./
 RUN go mod download
 
