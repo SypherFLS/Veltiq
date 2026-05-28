@@ -109,9 +109,8 @@ func applyDefaults(cfg *Config) {
 	if cfg.Env == "" {
 		cfg.Env = "local"
 	}
-	if !cfg.Cookies.Secure && cfg.Env == "prod" {
-		cfg.Cookies.Secure = true
-	}
+	// cookies.secure явно задаётся в конфиге. Не перебиваем — на HTTP-only
+	// деплое (например, за nginx без TLS) Secure=true делает cookie невалидной.
 	if len(cfg.CORS.AllowedOrigins) == 0 {
 		cfg.CORS.AllowedOrigins = []string{"http://localhost:3000", "http://127.0.0.1:3000"}
 	}
