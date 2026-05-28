@@ -56,6 +56,7 @@ func NewRouter(deps Deps) *gin.Engine {
 	protected.POST("/imports", importHandler.Upload)
 	protected.GET("/imports/:id/status", importHandler.Status)
 	protected.GET("/imports/:id/report", importHandler.Report)
+	protected.GET("/imports/:id/insights", importHandler.Insights)
 
 	return router
 }

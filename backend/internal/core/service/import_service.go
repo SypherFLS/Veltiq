@@ -96,7 +96,7 @@ func (s *ImportService) RunImport(ctx context.Context, tenantID string, raw io.R
 		return "", wrapped
 	}
 
-	receipts, err := s.parser.Parse(ctx, imp.ID, bytes.NewReader(payload))
+	parsed, err := s.parser.Parse(ctx, imp.ID, bytes.NewReader(payload))
 	if err != nil {
 		wrapped := s.wrapErr("Parsing", domain.Parse_Failed, err, err.Error(), domain.SeverityLocal, false)
 		s.trySetFailed(ctx, imp.ID, wrapped)
@@ -104,12 +104,19 @@ func (s *ImportService) RunImport(ctx context.Context, tenantID string, raw io.R
 		return "", wrapped
 	}
 
+	receipts := parsed.Receipts
+	items := parsed.Items
+
 	for i := range receipts {
 		receipts[i].ImportID = imp.ID
 		receipts[i].TenantID = tenantID
 	}
+	for i := range items {
+		items[i].ImportID = imp.ID
+		items[i].TenantID = tenantID
+	}
 
-	if err := s.workflow.PersistResults(ctx, imp.ID, receipts); err != nil {
+	if err := s.workflow.PersistResults(ctx, imp.ID, receipts, items); err != nil {
 		wrapped := s.wrapErr("PersistResults", domain.Store_Failed, err, err.Error(), domain.SeverityLocal, true)
 		s.trySetFailed(ctx, imp.ID, wrapped)
 		s.logger.Error("persist_results_failed", "importID", imp.ID, "err", wrapped.Error())

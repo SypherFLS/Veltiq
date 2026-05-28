@@ -10,9 +10,11 @@ const (
 )
 
 type Product struct {
-	Name string
-	Quantity int
-	UnitPrice int
+	SKU        string
+	Name       string
+	Category   string
+	Quantity   int
+	UnitPrice  int
 	TotalPrice int
 }
 
@@ -27,13 +29,29 @@ func (p *Product) OneByTotal() {
 }
 
 type Receipt struct {
-	ID int
-	ImportID string
-	TenantID string
-	StoreID int
+	ID            int
+	ImportID      string
+	TenantID      string
+	ExternalID    string
+	StoreID       int
 	TypeOfPayment PaymentType
-	Sum int
-	Items []Product
-	Cashier string
-	CreatedAt time.Time
+	Sum           int
+	Items         []Product
+	Cashier       string
+	CreatedAt     time.Time
+}
+
+type ReceiptItem struct {
+	ID                int
+	ImportID          string
+	TenantID          string
+	ReceiptExternalID string
+	SKU               string
+	Name              string
+	Category          string
+	Quantity          int
+	UnitPrice         int
+	TotalPrice        int
+	PaymentType       PaymentType
+	SoldAt            time.Time
 }

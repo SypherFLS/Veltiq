@@ -9,7 +9,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-type SortKey = 'daysWithoutSale' | 'stock' | 'name'
+type SortKey = 'daysWithoutSale' | 'salesQuantity' | 'name'
+
 type SortDir = 'asc' | 'desc'
 
 const sortKey = ref<SortKey>('daysWithoutSale')
@@ -128,8 +129,8 @@ function sortIcon(k: SortKey): string {
             </th>
             <th class="px-4 py-3 hidden sm:table-cell">Категория</th>
             <th class="px-4 py-3 text-right">
-              <button class="inline-flex items-center gap-1 hover:text-surface-700" @click="toggleSort('stock')">
-                Остаток <Icon :name="sortIcon('stock')" class="size-3.5" />
+              <button class="inline-flex items-center gap-1 hover:text-surface-700" @click="toggleSort('salesQuantity')">
+                Продано за период <Icon :name="sortIcon('salesQuantity')" class="size-3.5" />
               </button>
             </th>
             <th class="px-4 py-3 text-right">
@@ -151,7 +152,7 @@ function sortIcon(k: SortKey): string {
               {{ item.category ?? '—' }}
             </td>
             <td class="px-4 py-3 text-right tabular-nums text-surface-800">
-              {{ formatNumber(item.stock) }}
+              {{ formatNumber(item.salesQuantity) }}
             </td>
             <td class="px-4 py-3 text-right tabular-nums text-surface-800">
               {{ item.daysWithoutSale }}

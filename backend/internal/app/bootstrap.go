@@ -47,8 +47,8 @@ func Bootstrap(cfg *config.Config) (*App, error) {
 
 	authService := service.NewAuthService(userRepo, passwordManager)
 
-	csvParser := parser.NewStub()
-	analyzer := analytics.NewStub()
+	csvParser := parser.NewCSV()
+	analyzer := analytics.New()
 
 	importService := service.NewImportService(importRepo, importWorkflow, csvParser, log)
 	reportService := service.NewReportService(importRepo, postgres.NewReceiptRepository(db), analyzer, log)

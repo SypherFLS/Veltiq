@@ -7,5 +7,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&userRecord{},
 		&importRecord{},
 		&receiptRecord{},
+		&receiptItemRecord{},
 	)
 }

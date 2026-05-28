@@ -68,7 +68,17 @@ function onCancel() {
       </p>
     </div>
 
-    <VCard title="Файл чековой книги" description="Принимаются CSV, XLS/XLSX, JSON, XML">
+    <VCard title="Файл чековой книги" description="CSV: receipt_id,date,store_id,payment,sku,product_name,category,quantity,unit_price">
+      <template #actions>
+        <a
+          href="/sample-receipts.csv"
+          download
+          class="inline-flex items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-3 py-1.5 text-sm font-medium text-surface-700 hover:bg-surface-50 focus-ring"
+        >
+          <Icon name="lucide:download" class="size-4" />
+          Скачать пример CSV
+        </a>
+      </template>
       <ImportUploader
         :uploading="uploading"
         :progress="progress"

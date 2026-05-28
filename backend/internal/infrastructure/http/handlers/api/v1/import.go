@@ -150,6 +150,62 @@ func (h *ImportHandler) Report(c *gin.Context) {
 	c.JSON(http.StatusOK, reportResponse(report))
 }
 
+type illiquidItemJSON struct {
+	SKU                string `json:"sku"`
+	Name               string `json:"name"`
+	Category           string `json:"category,omitempty"`
+	SalesQuantity      int    `json:"salesQuantity"`
+	DaysWithoutSale    int    `json:"daysWithoutSale"`
+	LastSaleAt         string `json:"lastSaleAt,omitempty"`
+	Recommendation     string `json:"recommendation,omitempty"`
+	RecommendationNote string `json:"recommendationNote,omitempty"`
+}
+
+type insightsJSON struct {
+	ImportID    string             `json:"importId"`
+	GeneratedAt string             `json:"generatedAt"`
+	Items       []illiquidItemJSON `json:"items"`
+}
+
+func (h *ImportHandler) Insights(c *gin.Context) {
+	tenantID, ok := tenantFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	importID := c.Param("id")
+	insights, err := h.runner.GetImportInsights(c.Request.Context(), importID, tenantID)
+	if err != nil {
+		httperrors.Write(c, err)
+		return
+	}
+
+	items := make([]illiquidItemJSON, 0, len(insights.Items))
+	for _, it := range insights.Items {
+		lastSale := ""
+		if !it.LastSaleAt.IsZero() {
+			lastSale = it.LastSaleAt.UTC().Format(time.RFC3339)
+		}
+		items = append(items, illiquidItemJSON{
+			SKU:                it.SKU,
+			Name:               it.Name,
+			Category:           it.Category,
+			SalesQuantity:      it.SalesQuantity,
+			DaysWithoutSale:    it.DaysWithoutSale,
+			LastSaleAt:         lastSale,
+			Recommendation:     string(it.Recommendation),
+			RecommendationNote: it.RecommendationNote,
+		})
+	}
+
+	c.JSON(http.StatusOK, insightsJSON{
+		ImportID:    insights.ImportID,
+		GeneratedAt: insights.GeneratedAt.UTC().Format(time.RFC3339),
+		Items:       items,
+	})
+}
+
 func tenantFromContext(c *gin.Context) (string, bool) {
 	v, ok := c.Get(middleware.TenantIDKey)
 	if !ok {

@@ -22,7 +22,7 @@ export interface IlliquidItem {
   sku: string
   name: string
   category?: string
-  stock: number
+  salesQuantity: number
   daysWithoutSale: number
   lastSaleAt?: string
   recommendation?: 'discount' | 'bundle' | 'writeoff' | 'monitor'

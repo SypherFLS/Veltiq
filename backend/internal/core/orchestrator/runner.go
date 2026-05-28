@@ -42,3 +42,7 @@ func (r *Runner) ListImports(ctx context.Context, tenantID string, limit int) ([
 func (r *Runner) GetImportReport(ctx context.Context, importID, tenantID string) (domain.Report, error) {
 	return r.reportService.BuildReport(ctx, importID, tenantID)
 }
+
+func (r *Runner) GetImportInsights(ctx context.Context, importID, tenantID string) (domain.Insights, error) {
+	return r.reportService.BuildInsights(ctx, importID, tenantID)
+}
