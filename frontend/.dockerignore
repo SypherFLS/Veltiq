@@ -1,0 +1,16 @@
+node_modules
+.nuxt
+.output
+.nitro
+.cache
+dist
+.env
+.env.*
+.git
+.vscode
+.idea
+*.log
+coverage
+.playwright
+playwright-report
+test-results

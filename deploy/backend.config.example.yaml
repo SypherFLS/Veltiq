@@ -1,0 +1,28 @@
+env: prod
+http_server:
+  address: "0.0.0.0:8080"
+  timeout: 30s
+  idle_timeout: 60s
+  max_body_bytes: 26214400
+db:
+  host: postgres
+  port: 5432
+  user: veltiq
+  password: REPLACE_WITH_DB_PASSWORD
+  dbname: veltiq
+  sslmode: disable
+  auto_migrate: true
+jwt:
+  # сгенерируй: openssl rand -hex 48
+  secret_key: "REPLACE_WITH_LONG_RANDOM_HEX_AT_LEAST_64_CHARS"
+  access_ttl: 15m
+  refresh_ttl: 168h
+cookies:
+  # На проде у нас HTTP без SSL — Secure=false, иначе браузер не примет cookie.
+  # После перехода на HTTPS заменить на true.
+  secure: false
+cors:
+  # Same-origin через nginx, CORS не нужен. Оставляем пусто.
+  allowed_origins: []
+auth:
+  rate_limit_per_minute: 30

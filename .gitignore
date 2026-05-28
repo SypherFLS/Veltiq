@@ -1,0 +1,5 @@
+.env
+deploy/backend.config.yaml
+*.log
+.DS_Store
+Thumbs.db
